@@ -6,16 +6,19 @@
 require_once __DIR__ . '/AuthController.php';
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/License.php';
+require_once __DIR__ . '/../models/DeviceBinding.php';
 
 class DashboardController {
     private $authController;
     private $userModel;
     private $licenseModel;
+    private $deviceBinding;
     
     public function __construct() {
         $this->authController = new AuthController();
         $this->userModel = new User();
         $this->licenseModel = new License();
+        $this->deviceBinding = new DeviceBinding();
     }
     
     public function index() {
@@ -57,6 +60,13 @@ class DashboardController {
             $licenses = $this->licenseModel->findByUserId($userId, $limit, $offset);
             $total = $this->licenseModel->countByUserId($userId);
         }
+        
+        foreach ($licenses as &$license) {
+            $bindingCount = $this->deviceBinding->countByLicenseId($license['id']);
+            $license['binding_count'] = $bindingCount;
+            $license['is_binded'] = $bindingCount > 0;
+        }
+        unset($license);
         
         $totalPages = ceil($total / $limit);
         

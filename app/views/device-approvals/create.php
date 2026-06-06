@@ -30,15 +30,24 @@
                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                     onchange="updateOldFingerprint()">
                     <option value="">请选择要变更的许可证</option>
+                    <?php 
+                        $selectedLicenseId = isset($_GET['license_id']) ? (int)$_GET['license_id'] : 0;
+                        $preSelectedFingerprint = '';
+                    ?>
                     <?php foreach ($licenses as $license): ?>
                         <?php 
                             $bindings = (new DeviceBinding())->findByLicenseId($license['id']);
                             $hasBinding = !empty($bindings);
                             $currentFingerprint = $hasBinding ? $bindings[0]['device_fingerprint'] : '';
+                            $isSelected = $selectedLicenseId === (int)$license['id'] && $hasBinding;
+                            if ($isSelected) {
+                                $preSelectedFingerprint = $currentFingerprint;
+                            }
                         ?>
                         <option value="<?php echo $license['id']; ?>" 
                             data-fingerprint="<?php echo htmlspecialchars($currentFingerprint); ?>"
-                            <?php echo !$hasBinding ? 'disabled' : ''; ?>>
+                            <?php echo !$hasBinding ? 'disabled' : ''; ?>
+                            <?php echo $isSelected ? 'selected' : ''; ?>>
                             <?php echo htmlspecialchars($license['license_key']); ?> - <?php echo htmlspecialchars($license['product_name']); ?>
                             <?php echo !$hasBinding ? '(未绑定设备)' : ''; ?>
                         </option>
@@ -183,6 +192,13 @@ function updateFileName(input) {
         fileNameElement.classList.add('hidden');
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.getElementById('license_id');
+    if (select.value) {
+        updateOldFingerprint();
+    }
+});
 </script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>

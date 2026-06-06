@@ -22,6 +22,7 @@ require_once __DIR__ . '/../layouts/header.php';
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">产品名称</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">用户</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">状态</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">绑定状态</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">过期时间</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">创建时间</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
@@ -30,7 +31,7 @@ require_once __DIR__ . '/../layouts/header.php';
                 <tbody class="bg-white divide-y divide-gray-200">
                     <?php if (empty($licenses)): ?>
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">暂无许可证</td>
+                            <td colspan="8" class="px-6 py-4 text-center text-gray-500">暂无许可证</td>
                         </tr>
                     <?php else: ?>
                         <?php foreach ($licenses as $license): ?>
@@ -51,6 +52,17 @@ require_once __DIR__ . '/../layouts/header.php';
                                         ?>
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <?php if (!empty($license['is_binded'])): ?>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            已绑定
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                            未绑定
+                                        </span>
+                                    <?php endif; ?>
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-600">
                                     <?php echo $license['expires_at'] ? date('Y-m-d', strtotime($license['expires_at'])) : '永不过期'; ?>
                                 </td>
@@ -59,6 +71,9 @@ require_once __DIR__ . '/../layouts/header.php';
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <a href="/licenses/view?id=<?php echo $license['id']; ?>" class="text-blue-600 hover:text-blue-900 mr-3">查看</a>
+                                    <?php if (!empty($license['is_binded']) && $license['status'] === 'active'): ?>
+                                        <a href="/device-approvals/create?license_id=<?php echo $license['id']; ?>" class="text-orange-600 hover:text-orange-900">变更</a>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
