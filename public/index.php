@@ -38,6 +38,13 @@ $routes = [
     'licenses/view' => ['controller' => 'LicenseController', 'action' => 'view'],
     'licenses/update' => ['controller' => 'LicenseController', 'action' => 'update'],
     'licenses/delete' => ['controller' => 'LicenseController', 'action' => 'delete'],
+    'device-approvals' => ['controller' => 'DeviceApprovalController', 'action' => 'index'],
+    'device-approvals/create' => ['controller' => 'DeviceApprovalController', 'action' => 'create'],
+    'device-approvals/view' => ['controller' => 'DeviceApprovalController', 'action' => 'view'],
+    'device-approvals/approve' => ['controller' => 'DeviceApprovalController', 'action' => 'approve'],
+    'device-approvals/reject' => ['controller' => 'DeviceApprovalController', 'action' => 'reject'],
+    'device-approvals/request-risk-review' => ['controller' => 'DeviceApprovalController', 'action' => 'requestRiskReview'],
+    'device-approvals/banned-devices' => ['controller' => 'DeviceApprovalController', 'action' => 'bannedDevices'],
 ];
 
 // Default route

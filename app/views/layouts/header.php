@@ -21,6 +21,7 @@
                         <span class="text-gray-700">欢迎，<strong><?php echo htmlspecialchars($_SESSION['username']); ?></strong></span>
                         <a href="/dashboard" class="px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors">仪表板</a>
                         <a href="/dashboard/licenses" class="px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors">许可证</a>
+                        <a href="/device-approvals" class="px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors">设备变更</a>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
                             <a href="/dashboard/users" class="px-4 py-2 text-gray-700 hover:text-blue-600 transition-colors">用户管理</a>
                         <?php endif; ?>
