@@ -70,33 +70,6 @@ class LicenseController {
         require_once __DIR__ . '/../views/licenses/create.php';
     }
     
-    public function view() {
-        $this->authController->requireAuth();
-        
-        $id = $_GET['id'] ?? null;
-        if (!$id) {
-            $_SESSION['error'] = '许可证ID是必填项';
-            header('Location: /dashboard/licenses');
-            exit;
-        }
-        
-        $license = $this->licenseModel->findById($id);
-        if (!$license) {
-            $_SESSION['error'] = '许可证不存在';
-            header('Location: /dashboard/licenses');
-            exit;
-        }
-        
-        // Users can only view their own licenses unless they're admin
-        if ($license['user_id'] != $_SESSION['user_id'] && $_SESSION['role'] !== 'admin') {
-            $_SESSION['error'] = '访问被拒绝';
-            header('Location: /dashboard/licenses');
-            exit;
-        }
-        
-        require_once __DIR__ . '/../views/licenses/view.php';
-    }
-    
     public function update() {
         $this->authController->requireAuth();
         
@@ -326,29 +299,51 @@ class LicenseController {
     
     public function validateApi() {
         header('Content-Type: application/json');
+        header('Access-Control-Allow-Origin: *');
+        header('Access-Control-Allow-Methods: POST, OPTIONS');
+        header('Access-Control-Allow-Headers: Content-Type');
         
-        $licenseKey = $_POST['license_key'] ?? '';
-        $deviceFingerprint = $_POST['device_fingerprint'] ?? '';
-        $deviceInfo = $_POST['device_info'] ?? null;
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit;
+        }
         
-        if (empty($licenseKey) || empty($deviceFingerprint)) {
+        try {
+            $inputData = json_decode(file_get_contents('php://input'), true);
+            
+            $licenseKey = $inputData['license_key'] ?? $_POST['license_key'] ?? '';
+            $deviceFingerprint = $inputData['device_fingerprint'] ?? $_POST['device_fingerprint'] ?? '';
+            $deviceInfo = $inputData['device_info'] ?? $_POST['device_info'] ?? null;
+            
+            if (empty($licenseKey) || empty($deviceFingerprint)) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => '许可证密钥和设备指纹是必填项'
+                ]);
+                exit;
+            }
+            
+            $validation = $this->licenseModel->validate($licenseKey);
+            if (!$validation['valid']) {
+                echo json_encode([
+                    'success' => false,
+                    'message' => $validation['message']
+                ]);
+                exit;
+            }
+            
+            $license = $validation['license'];
+            $result = $this->deviceBinding->activateLicense($license['id'], $deviceFingerprint, $deviceInfo);
+            
+            echo json_encode($result);
+            exit;
+        } catch (Exception $e) {
+            error_log("License validation API error: " . $e->getMessage());
             echo json_encode([
                 'success' => false,
-                'message' => '许可证密钥和设备指纹是必填项'
+                'message' => '服务器内部错误: ' . $e->getMessage()
             ]);
             exit;
         }
-        
-        $validation = $this->licenseModel->validate($licenseKey);
-        if (!$validation['valid']) {
-            echo json_encode($validation);
-            exit;
-        }
-        
-        $license = $validation['license'];
-        $result = $this->deviceBinding->activateLicense($license['id'], $deviceFingerprint, $deviceInfo);
-        
-        echo json_encode($result);
-        exit;
     }
 }
